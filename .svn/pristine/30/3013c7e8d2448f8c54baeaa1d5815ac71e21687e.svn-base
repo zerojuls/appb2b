@@ -1,0 +1,74 @@
+<?php
+
+if (!defined('BASEPATH')) exit('No permitir el acceso directo al script');
+
+class Autorizarpedidos_m extends CI_Model {
+    
+    public function __construct() {
+        parent::__construct();
+    }
+    
+    public function get_autorizarpedidos_list($arrParam1,$arrParam2) {
+        $ar_result = array();
+        $consulta = "   SELECT      LPAD(P.id_pedido,10,'0') AS codigo_pedido,
+                                    P.id_pedido AS id_pedido,
+                                    'active' AS activo, C.nombre AS cliente, C.direccion AS direccion, 
+                                    CA.nombre AS categoria,
+                                    valor_venta AS monto, DATE_FORMAT(fecha_registro, '%d/%m/%Y') AS fecha
+                        FROM        pedido P
+                        INNER JOIN  pedido_detalle PD ON P.id_pedido = PD.id_pedido
+                        INNER JOIN  unidad_venta UV ON PD.id_tipo_precio = UV.id_tipo_precio AND PD.id_producto=UV.id_producto AND PD.id_envase=UV.id_envase AND PD.id_unidad=UV.id_unidad
+                        INNER JOIN  producto PR ON PD.id_producto = PR.id_producto
+                        INNER JOIN  subcategoria_producto SCP ON PR.id_producto = SCP.id_producto
+                        INNER JOIN  subcategoria SC ON SCP.id_subcategoria = SC.id_subcategoria
+                        INNER JOIN  categoria CA ON SC.id_categoria = CA.id_categoria
+                        INNER JOIN  cliente C ON P.id_cliente = C.id_cliente
+                        INNER JOIN  sucursal S ON C.id_cliente  = S.id_cliente
+                        INNER JOIN  sucursal_usuario SU ON S.id_sucursal = SU.id_sucursal 
+                        WHERE       P.flag_autorizado = 1 AND SU.id_usuario = ".$arrParam1." AND P.estado = 'Z'
+                        GROUP BY    PD.id_pedido
+                        ORDER BY    fecha DESC";
+        $query = $this->db->query($consulta);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+    
+    public function get_cabecera_autorizarpedido_list($arrParam) {
+        $ar_result = array();
+        $consulta = "   SELECT 		LPAD(P.id_pedido,10,'0') AS codigo_pedido,
+                                        DATE_FORMAT(fecha_registro, '%d/%m/%Y') AS fecha  
+                        FROM 		pedido_detalle PD
+                        INNER JOIN 	pedido P ON PD.id_pedido=P.id_pedido
+                        INNER JOIN	unidad_venta UV ON PD.id_tipo_precio = UV.id_tipo_precio AND PD.id_producto=UV.id_producto AND PD.id_envase=UV.id_envase AND PD.id_unidad=UV.id_unidad
+                        INNER JOIN 	producto PR ON PD.id_producto=PR.id_producto
+                        INNER JOIN 	unidad U ON PD.id_unidad=U.id_unidad
+                        INNER JOIN 	marca M ON PR.id_marca=M.id_marca
+                        INNER JOIN      estado E ON P.estado = E.id_estado
+                        WHERE           P.id_pedido = ".$arrParam."";
+        $query = $this->db->query($consulta);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+    
+    public function get_detalle_autorizarpedidos_list($arrParam) {
+        $ar_result = array();
+        $consulta = "	SELECT 		PD.id_pedido_detalle, PD.id_pedido, PR.codigo AS codigo_producto, PR.nombre, 
+				M.nombre AS marca, U.nombre AS unidad, PD.cantidad, PD.precio
+                        FROM 		pedido_detalle PD
+                        INNER JOIN 	pedido P ON PD.id_pedido=P.id_pedido
+                        INNER JOIN 	producto PR ON PD.id_producto=PR.id_producto
+                   	     INNER JOIN 	unidad U ON PD.id_unidad=U.id_unidad
+                        INNER JOIN 	marca M ON PR.id_marca=M.id_marca
+                        WHERE P.id_pedido = ".$arrParam."";
+        $query = $this->db->query($consulta);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+    
+    public function authorize_pedido($arrParam){
+        $ar_consulta = array();
+        $consulta = " UPDATE pedido SET flag_autorizado = 0 WHERE id_pedido = ".$arrParam."; ";
+        $ar_consulta = $this->db->query($consulta);
+        return 'Pedido Autorizado';
+    }
+}

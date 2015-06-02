@@ -1,0 +1,16 @@
+<h2>Solicitud de Pedido</h2>
+<?php foreach($rs->result() as $val){ ?>
+<div class="span6">
+    <div class="box color_2 height_medium paint_hover">
+      <div class="content numbers">
+        <h3><?php echo $val->nombre; ?></h3>
+        <?php if($val->id_categoria==$idcategoria_pedido){ ?>
+        <p align="right">Tiene un pedido pendiente por confirmar.</p>
+        <?php } ?>
+        <?php if($val->id_categoria==$idcategoria_pedido || !$idcategoria_pedido){ ?>
+        <div  align="right"><a href="<?php echo base_url('pedido/listar_productos/'.$val->id_categoria); ?>" class="btn" >Comprar</a></div>
+        <?php } ?>
+      </div>
+    </div>
+</div>
+<?php } ?>

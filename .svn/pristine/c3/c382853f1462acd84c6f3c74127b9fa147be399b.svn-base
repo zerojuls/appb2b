@@ -1,0 +1,27 @@
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS PRODUCTO_DETALLE_GET$$
+
+CREATE PROCEDURE `PRODUCTO_DETALLE_GET`(
+ IN P_id_producto INT
+ )
+BEGIN
+	SELECT 		TP.id_tipo_precio AS id_tipo_precio, 
+				P.id_producto AS id_producto, 
+				E.id_envase AS id_envase,
+				U.id_unidad AS id_unidad,
+				P.codigo AS c_producto, 
+				P.nombre_corto AS d_producto, 
+				P.descripcion AS d_descripcion,
+				M.nombre AS d_marca, 
+				E.nombre AS d_envase,
+				U.nombre AS d_unidad,
+				UV.precio_compra AS precio
+	FROM 		unidad_venta UV
+	INNER JOIN 	tipo_precio TP ON UV.id_tipo_precio=TP.id_tipo_precio
+	INNER JOIN 	producto P ON  UV.id_producto=P.id_producto
+	INNER JOIN 	envase E ON UV.id_envase=E.id_envase
+	INNER JOIN 	unidad U ON P.id_unidad = U.id_unidad
+	INNER JOIN 	marca M ON P.id_marca = M.id_marca
+	WHERE 		P.id_producto = P_id_producto OR P_id_producto IS NULL;
+END$$

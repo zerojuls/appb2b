@@ -1,0 +1,73 @@
+<?php
+
+if (!defined('BASEPATH')) exit('No permitir el acceso directo al script');
+
+
+class Reportecomprobante extends CI_Controller {
+    var $_arr_Sesion;
+    public function __construct() {
+        
+         parent::__construct();
+         //
+         $this->_arr_Sesion = $this->session->userdata('ses_usuario');
+         $this->load->database();
+         $this->load->helper('url');
+         $this->load->helper('form');
+        $this->load->library('form_validation');
+        $this->load->model('reportecomprobante_m');
+        //load our new PHPExcel library
+        $this->load->library('excel');
+    }
+    
+    public function index() {
+        // if ($this->seguridad->sec_class(__METHOD__)) return;
+        $arrSesion = $this->session->userdata('ses_usuario');
+        $arrSesion['controller'] = 'Reporte por Comprobante';
+        $arrSesion['mGroup'] = 'm_reporte';
+        $arrSesion['mOption'] = 'm_reporte_02';
+        $this->load->view('includes/header');
+        $this->load->view('includes/menu',$arrSesion);
+        $this->load->view('includes/panel',$arrSesion);        
+        $arrRpt = array(
+            'fInicio'        => '',
+            'fFin'           => '',
+         );   
+        $this->session->set_userdata('arrayrpt', $arrRpt);
+        $this->load->view('reportecomprobante/reportecomprobante_list_v',$arrRpt);
+        $this->load->view('includes/footer');
+    }
+    
+    public function load_reporte($fechaIni,$fechaFin){
+        // if ($this->seguridad->sec_class(__METHOD__)) return;
+        $arrRpt = array(
+            'fInicio'    => $fechaIni,
+            'fFin'       => $fechaFin,
+         );   
+        $this->session->set_userdata('arrayrpt', $arrRpt);
+    }
+    
+    public function get_reportecomprobante_list(){
+        // if ($this->seguridad->sec_class(__METHOD__)) return;
+        $arrSesion = $this->session->userdata('ses_usuario');
+        $arrRpt = $this->session->userdata('arrayrpt');
+        $arrUsuario  = $arrSesion["id_usuario"];
+        $arrFechaIni = $arrRpt['fInicio'];
+        $arrFechaFin = $arrRpt['fFin'];
+        $result = $this->reportecomprobante_m->get_reportecomprobante_list($arrUsuario,$arrFechaIni, $arrFechaFin);
+        echo $arrReporte = json_encode($result, JSON_NUMERIC_CHECK);
+//         $this->session->unset_userdata('arrayrpt'); 
+    }
+    
+    public function detalle_comprobante(){
+        $head = $this->reportecomprobante_m->get_cabecera_comprobante($this->input->post('id'));
+        $data = array('id_comprobante_pago' => $this->input->post('id'), 'arrCabecera' => $head);
+        $this->load->view('reportecomprobante/reportecomprobante_detail_v', $data);
+    }
+    
+    public function get_comprobanteventa_detail($data){
+        // $arrSesion = $this->_arr_Sesion;
+        $result = $this->reportecomprobante_m->get_comprobanteventa_detail($data);	
+        header("Content-type: application/json");
+	echo Json_encode($result);
+    }
+}

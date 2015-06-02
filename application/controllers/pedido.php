@@ -1,0 +1,303 @@
+ <?php
+if (!defined('BASEPATH')) exit('No permitir el acceso directo al script');
+
+class Pedido extends CI_Controller {
+    
+    var $_arr_Sesion;
+    
+    public function __construct(){
+        parent::__construct();
+        $this->_arr_Sesion = $this->session->userdata('ses_usuario');
+        $this->load->database();
+        $this->load->model('pedido_m');
+    }
+    
+    public function index(){
+        $arrSesion = $this->_arr_Sesion;
+        $arrSesion['controller'] = 'Pedido';
+        $arrSesion['mGroup'] = 'm_pedido';
+        $arrSesion['mOption'] = 'm_pedido_01';
+        $this->load->view('includes/header');
+        $this->load->view('includes/menu',$arrSesion);
+        $this->load->view('includes/panel',$arrSesion);
+        $data = array(
+            'rs' => $this->pedido_m->get_lista_categoria($arrSesion["id_sucursal"]),
+            'idcategoria_pedido' => $this->pedido_m->get_idcategoria_pedido($arrSesion["id_sucursal"])
+        );
+        $this->load->view('pedido/index_view',$data);
+        $this->load->view('includes/footer');
+    }
+    
+    public function listar_productos($id_categoria){
+        $arrSesion = $this->_arr_Sesion;
+        $arrSesion['controller'] = 'Pedido';
+        $arrSesion['mGroup'] = 'm_pedido';
+        $arrSesion['mOption'] = 'm_pedido_01';
+        $this->load->view('includes/header');
+        $this->load->view('includes/menu',$arrSesion);
+        $this->load->view('includes/panel',$arrSesion);
+        $montoAsignado = $this->pedido_m->montos_generales($arrSesion['id_sucursal'],$id_categoria,'asignado');
+        $nombreCategoria = $this->pedido_m->get_nombre_categoria($id_categoria);
+        $montoAcumulado = $this->pedido_m->get_monto_acumulado($arrSesion['id_sucursal'],$id_categoria);
+        $listaProducto = $this->pedido_m->get_lista_producto($arrSesion['id_corporativo'],$id_categoria);
+        $data = array('monto_asignado'=>$montoAsignado,
+                      'nombre_categoria'=>$nombreCategoria,
+                      'monto_acumulado'=>$montoAcumulado,
+                      'lista_producto'=>$listaProducto,
+                      'id_categoria'=>$id_categoria);
+        $this->load->view('pedido/listar_productos_view',$data);
+        $this->load->view('includes/footer');
+    }
+    
+    public function new_pedido(){
+        $arrSesion = $this->_arr_Sesion;
+        $data = array(
+            'id_cliente' => $arrSesion['id_sucursal'],
+            'id_producto' => $this->input->post('id'),
+        );
+        $result = $this->pedido_m->get_producto_detalle($data);
+        if (count($result) == 0) {
+            echo null;
+        } else {
+            $arrSesion = array(
+                'txt_id_tipo_precio'    => $result[0]["id_tipo_precio"],
+                'txt_id'                => $result[0]["id_producto"],
+                'txt_id_envase'         => $result[0]["id_envase"],
+                'txt_id_unidad'         => $result[0]["id_unidad"],
+                'txt_c_producto'        => $result[0]["c_producto"],
+                'txt_d_producto'        => $result[0]["d_producto"],
+                'txt_d_descripcion'     => $result[0]["d_descripcion"],
+                'txt_d_marca'           => $result[0]["d_marca"],
+                'txt_d_envase'          => $result[0]["d_envase"],
+                'txt_d_unidad'          => $result[0]["d_unidad"],
+                'txt_precio'            => $result[0]["precio"],
+            );
+            $this->load->view('pedido/pedido_new_view', $arrSesion);
+        }
+    }
+    
+    /*public function edit_pedido(){
+        $data = array(
+            'id_pedido_detalle' => $this->input->post('id'),
+        );
+        $result = $this->pedido_m->get_pedido_detalle($data);
+        if (count($result) == 0) {
+            echo null;
+        } else {
+            $arrSesion = array(
+                'txt_id_pedido_detalle' => $result[0]["id_pedido_detalle"],
+                'txt_id_pedido'         => $result[0]["id_pedido"],
+                'txt_id_tipo_precio'    => $result[0]["id_tipo_precio"],
+                'txt_id'                => $result[0]["id_producto"],
+                'txt_id_envase'         => $result[0]["id_envase"],
+                'txt_id_unidad'         => $result[0]["id_unidad"],
+                'txt_c_producto'        => $result[0]["c_producto"],
+                'txt_d_producto'        => $result[0]["d_producto"],
+                'txt_d_descripcion'     => $result[0]["d_descripcion"],
+                'txt_d_marca'           => $result[0]["d_marca"],
+                'txt_d_envase'          => $result[0]["d_envase"],
+                'txt_d_unidad'          => $result[0]["d_unidad"],
+                'txt_precio'            => $result[0]["precio"],
+                'txt_cantidad'          => $result[0]["cantidad"],
+            );
+            $this->load->view('pedido/pedido_edit_view', $arrSesion);
+        }
+    }*/
+
+    public function add_pedido(){
+        $arrSesion = $this->_arr_Sesion;
+        // Datos de validación
+        $config = array(
+            array(
+                'field' => 'txt_cantidad',
+                'label' => 'cantidad',
+                'rules' => 'required|trim|numeric'
+            )
+        );
+        $this->form_validation->set_rules($config);
+        //Reglas
+        $this->form_validation->set_message('required', 'El campo'.' %s '.'es requerido');
+        $this->form_validation->set_message('numeric', 'El campo'.' %s '.'debe de contener solo números');
+        if (!$this->form_validation->run()) {
+            foreach ($config as $v1) {
+                foreach ($v1 as $k => $v) {
+                    $mensaje = form_error($v);
+                    if ($mensaje != "") {
+                        break 2;
+                    }
+                }
+            }
+        } else {
+            $arrParam = array('id_sucursal' => $this->_arr_Sesion["id_sucursal"],
+                              'id_usuario' => $this->_arr_Sesion["id_usuario"],
+                              'id_tipo_precio' => $this->input->post('txt_id_tipo_precio'),
+                              'id_producto' => $this->input->post('txt_id'),
+                              'id_envase' => $this->input->post('txt_id_envase'),
+                              'id_unidad' => $this->input->post('txt_id_unidad'),
+                              'cantidad' => $this->input->post('txt_cantidad'));
+            try {
+                $result = $this->pedido_m->add_producto($arrParam);
+                $mensaje = $result[0]['Mensaje'];
+            } catch (Exception $e){
+                $mensaje = 'Error de transaccion.';
+            }
+        } 
+        if($result[0]['Mensaje'] == ''){
+            $mensaje = '';
+            $data = array('id_cliente' => $arrSesion["id_sucursal"],
+                          'id_producto' => $this->input->post('txt_id'));
+            $producto = $this->pedido_m->get_producto_detalle($data);
+            $arrParams = array('id_usuario' => $arrSesion["id_usuario"],
+                               'alias_tipo_usuario' => $arrSesion["alias_tipo_usuario"]
+                              );
+            $montos = json_decode($this->pedido_m->get_montos_pedido($arrParams));
+            $arrData = array('producto' => $producto[0]["d_producto"],
+                             'codigo' => $producto[0]["c_producto"],
+                             'cantidad' => $this->input->post('txt_cantidad'),
+                             'envase' => $producto[0]["d_envase"],
+                             'unidad' => $producto[0]["d_unidad"],
+                             'precio_total' => ($this->input->post('txt_cantidad')*$producto[0]["precio"]),
+                             'num_articulo' => $montos[0]->cantidad,
+                             'total_producto' => $montos[0]->monto_comprado,
+                             'id_categoria'=>$this->pedido_m->get_idcategoria_pedido($arrSesion["id_sucursal"]));
+        }
+        $arrData['mensaje'] = $mensaje;
+        $this->load->view('pedido/pedido_next_view',$arrData);
+    }
+    
+    public function pedido_detalle($id_categoria){
+        $arrSesion = $this->_arr_Sesion;
+        $arrSesion['controller'] = 'Pedido';
+        $arrSesion['mGroup'] = 'm_pedido';
+        $arrSesion['mOption'] = 'm_pedido_01';
+        $arrParam = array('id_usuario'=>$this->_arr_Sesion["id_usuario"],
+                           'alias_tipo_usuario'=>$this->_arr_Sesion["alias_tipo_usuario"]
+                         );        
+        $montoAsignado = $this->pedido_m->montos_generales($arrSesion['id_sucursal'],$id_categoria,'asignado');
+        $nombreCategoria = $this->pedido_m->get_nombre_categoria($id_categoria);
+        $montoAcumulado = $this->pedido_m->get_monto_acumulado($arrSesion['id_sucursal'],$id_categoria);
+        $montoPedido = $this->pedido_m->get_monto_pedido($arrParam);
+        $listaProducto = $this->pedido_m->get_lista_producto($arrSesion['id_corporativo'],$id_categoria);
+        $arrData = array('data' => $this->pedido_m->get_pedido_detalle($arrParam),
+                         'monto_asignado'=>$montoAsignado,
+                         'nombre_categoria'=>$nombreCategoria,
+                         'monto_acumulado'=>$montoAcumulado,
+                         'monto_pedido'=>$montoPedido,
+                         'lista_producto'=>$listaProducto,
+                         'id_categoria'=>$id_categoria,
+                         );
+        $this->load->view('includes/header');
+        $this->load->view('includes/menu',$arrSesion);
+        $this->load->view('includes/panel',$arrSesion);
+        $this->load->view('pedido/pedido_detalle_view', $arrData);
+        $this->load->view('includes/footer');
+    }
+    
+    public function update_pedido(){
+        $codigos = $this->input->post('codigo');
+        $cantidades = $this->input->post('cantidad');
+        $id_usuario = $this->_arr_Sesion["id_usuario"];
+        $result = $this->pedido_m->upd_producto($codigos,$cantidades,$id_usuario);
+    }
+    
+    /*public function amount_pedido(){
+        $result = $this->pedido_m->montos_pedido();
+        $arrSesion = array(
+            'txt_precio' => $result[0]["cantidad"]
+        );
+        $this->load->view('frontend/pedido/lista_productos_view', $arrSesion);
+    }*/
+    
+    public function confirm_pedido(){
+        $msg = '';
+        $arrSesion = $this->_arr_Sesion;
+        $arrParam = array('id_usuario' => $this->_arr_Sesion["id_usuario"],
+                          'alias_tipo_usuario' => $this->_arr_Sesion["alias_tipo_usuario"]
+                         ); 
+        if($arrSesion["alias_tipo_usuario"] == 'admin'){ // ES CORPORATIVO 
+            $data = array(
+                'id_usuario' => $arrSesion["id_usuario"],
+                'alias_tipo_usuario' => $arrSesion["alias_tipo_usuario"],            
+            );
+            $arrData['arrSucursales'] = $this->pedido_m->get_sucursales($data);
+        }else{ // ES SUCURSAL
+            $idCategoria = $this->pedido_m->get_idcategoria_pedido($arrSesion['id_sucursal']);
+            $montoAsignado = $this->pedido_m->montos_generales($arrSesion['id_sucursal'],$idCategoria,'asignado');
+            $montoMinimo = $this->pedido_m->montos_generales($arrSesion['id_sucursal'],$idCategoria,'minimo');
+            $montoAcumulado = $this->pedido_m->get_monto_acumulado($arrSesion['id_sucursal'],$idCategoria);
+            $montoDisponible = $montoAsignado-$montoAcumulado;
+            $montoPedido = $this->pedido_m->get_monto_pedido($arrParam);
+            if($montoPedido<=$montoDisponible){
+                if($montoPedido<$montoMinimo){
+                    $msg = 'El monto mínimo de la compra debe ser mayor a S/.'.$montoMinimo;
+                }
+            }else{
+                $validar = false;
+                $msg = 'El monto de la compra supera el monto disponible.';
+            }
+            $arrData = array('txt_disabled' => 'hide',
+                             'id_sucursal' => $arrSesion["id_sucursal"],
+                             'mensaje' => $msg
+                            );
+        }
+        $this->load->view('pedido/pedido_confirm_view', $arrData);
+    }
+    
+    public function agree_pedido(){
+        $data = array(  'id_usuario'    => $this->_arr_Sesion["id_usuario"],  
+                        'alias_tipo_usuario'    => $this->_arr_Sesion["alias_tipo_usuario"],
+                        'id_categoria'  => $this->pedido_m->get_idcategoria_pedido($this->_arr_Sesion["id_sucursal"]),
+                        'sucursal'      => $this->input->post('cb_sucursal'),    
+                        'observacion'   => $this->input->post('txt_observacion'));
+        try {
+            $result = $this->pedido_m->confirm_pedido($data);
+            $arrMessage['mensaje'] = $result[0]['Mensaje'];
+        } catch (Exception $e) {
+            $arrMessage['mensaje'] = 'Error de transaccion.';
+        }
+        if($result[0]['Mensaje'] == ''){$arrMessage['mensaje'] = 'Pedido confirmado.';}
+        echo $arrMessage['mensaje'];
+    }
+    
+    public function cancel_pedido(){
+        $id_usuario = $this->_arr_Sesion["id_usuario"];
+        $result = $this->pedido_m->del_pedido($id_usuario);
+        echo $result;
+    }
+    
+    public function get_producto_list(){
+        $spName = 'PRODUCTO_GET';
+        $arrParam = array(null,'1');
+        $result = $this->base_m->get_listar_json($spName, $arrParam);
+        echo $result;
+    }
+    
+    public function get_categoria_list(){
+        $spName = 'CATEGORIA_GET';
+        $arrParam = array(null);
+        $result = $this->base_m->get_listar_json($spName, $arrParam);
+        echo $result;
+    }
+    /*
+    public function get_detalle_pedido_list(){
+        $spName = 'PEDIDO_DETALLE_GET';
+        $arrSesion = $this->_arr_Sesion;
+        $arrParam = array(
+            'id_usuario' => $arrSesion["id_usuario"],
+            'alias_tipo_usuario' => $arrSesion["alias_tipo_usuario"]
+        );
+        $result = $this->base_m->get_listar_json($spName, $arrParam);
+        echo $result;
+    }*/
+  
+    public function get_pedido_saldo(){
+        $arrSesion = $this->_arr_Sesion;
+        $arrParam = array(
+            'id_usuario' => $arrSesion["id_usuario"],
+            'alias_tipo_usuario' => $arrSesion["alias_tipo_usuario"]
+        );
+        $result = $this->pedido_m->get_montos_pedido($arrParam);
+        echo $result;
+    }
+    
+}

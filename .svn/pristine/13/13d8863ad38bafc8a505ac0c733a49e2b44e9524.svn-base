@@ -1,0 +1,57 @@
+<?php
+
+if (!defined('BASEPATH')) exit('No permitir el acceso directo al script');
+
+class Centrocosto_m extends CI_Model {
+    
+    public function __construct() {
+        parent::__construct();
+    }
+    
+    public function get_centrocosto_list($arrParam1,$arrParam2) {
+             $ar_result = array();
+        $consulta = "   SELECT          S.id_sucursal AS id_sucursal, 
+					C.codigo_cliente AS codigo_cliente, 
+					C.nombre AS nombre, 
+					CONCAT(PE.nombre, ' ',PE.apellido) AS responsable,
+					U.email AS email,
+					C.direccion AS direccion,
+					(CASE CU.estado WHEN 'A' THEN 'Activo' END) AS estado
+			FROM 		sucursal_usuario SU
+			INNER JOIN 	sucursal S ON SU.id_sucursal = S.id_sucursal
+			INNER JOIN 	cliente C ON S.id_cliente = C.id_cliente
+			INNER JOIN      cliente_usuario CU ON C.id_cliente = CU.id_cliente
+			INNER JOIN      usuario U ON CU.id_usuario = U.id_usuario
+			INNER JOIN      persona_usuario PU ON U.id_usuario = PU.id_usuario
+			INNER JOIN      persona PE ON PU.id_persona = PE.id_persona
+			WHERE 		SU.id_usuario = ".$arrParam1."";
+        $query = $this->db->query($consulta);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+    
+    public function get_montos_asignados($id_sucursal) {
+        $ar_result = array();
+        $consulta = "   SELECT     	S.id_sucursal AS id_sucursal, C.nombre AS sucursal, CA.nombre AS categoria,
+                                        (CASE WHEN ((SELECT COUNT(*) FROM sucursal_categoria_monto SCM INNER JOIN sucursal_usuario SU ON SCM.id_sucursal = SU.id_sucursal 
+                                        WHERE SU.id_sucursal = ".$id_sucursal." AND SCM.id_categoria = CC.id_categoria )>0) THEN SCM.valor
+                                        ELSE CCM.valor END) AS monto_asignado,
+                                        (CASE WHEN ((SELECT COUNT(*) FROM sucursal_categoria_monto SCM INNER JOIN sucursal_usuario SU ON SCM.id_sucursal = SU.id_sucursal 
+                                        WHERE SU.id_sucursal = ".$id_sucursal." AND SCM.id_categoria = CC.id_categoria )>0) THEN (SCM.valor - SC.monto_acumulado)
+                                        ELSE (CCM.valor - SC.monto_acumulado) END) AS monto_disponible
+                        FROM       	monto M
+                        INNER JOIN 	corporativo_categoria_monto CCM ON M.id_monto = CCM.id_monto
+                        INNER JOIN 	corporativo_categoria CC ON CCM.id_corporativo_categoria = CC.id_corporativo_categoria
+                        INNER JOIN 	sucursal_categoria_monto SCM ON M.id_monto = SCM.id_monto
+                        INNER JOIN 	sucursal_categoria SC ON CCM.id_corporativo_categoria = SC.id_corporativo_categoria
+                        INNER JOIN 	categoria CA ON CA.id_categoria = CC.id_categoria
+                        INNER JOIN 	sucursal S ON SC.id_sucursal = S.id_sucursal
+                        INNER JOIN 	cliente C ON S.id_cliente = C.id_cliente
+                        INNER JOIN 	cliente_usuario CU ON C.id_cliente = CU.id_cliente
+                        WHERE 		M.id_monto = 1
+                        AND 		S.id_sucursal = ".$id_sucursal."; ";
+        $query = $this->db->query($consulta);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+}

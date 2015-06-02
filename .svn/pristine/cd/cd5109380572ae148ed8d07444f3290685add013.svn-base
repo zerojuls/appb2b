@@ -1,0 +1,62 @@
+<?php
+
+if (!defined('BASEPATH')) exit('No permitir el acceso directo al script');
+
+class Autorizarpedidos extends CI_Controller {
+
+    var $_arr_Sesion;
+
+    public function __construct() {
+
+        parent::__construct();
+        $this->_arr_Sesion = $this->session->userdata('ses_usuario');
+        $this->load->database();
+        $this->load->helper('url');
+        $this->load->helper('form');
+        $this->load->library('form_validation');
+        $this->load->model('autorizarpedidos_m');
+    }
+
+    public function index() {
+        $arrSesion = $this->_arr_Sesion;
+        $arrSesion['controller'] = '<span>Autorización</span><span class="to_hide_phone">&nbsp;de Pedidos</span>';
+        $arrSesion['mGroup'] = 'm_pedido';
+        $arrSesion['mOption'] = 'm_pedido_02';
+        $this->load->view('includes/header');
+        $this->load->view('includes/menu', $arrSesion);
+        $this->load->view('includes/panel', $arrSesion);
+
+        $this->load->view('frontend/autorizarpedidos/autorizarpedidos_list_v');
+        $this->load->view('includes/footer');
+    }
+
+    public function detail_pedido() {
+        $arrSesion = $this->_arr_Sesion;
+        $result = $this->autorizarpedidos_m->get_cabecera_autorizarpedido_list($this->input->post('id'));
+        $data = array('id_pedido' => $this->input->post('id'), 'arrCabecera' => $result, 'alias_tipo_usuario' => $arrSesion["alias_tipo_usuario"]);
+        $this->load->view('frontend/autorizarpedidos/autorizarpedidos_detail_v', $data);
+    }
+
+    public function get_autorizarpedidos_list() {
+        $arrSesion = $this->_arr_Sesion;
+        $result = $this->autorizarpedidos_m->get_autorizarpedidos_list($arrSesion["id_usuario"], $arrSesion["tipo_usuario"]);
+        header("Content-type: application/json");
+        echo Json_encode($result);
+    }
+
+    public function get_detalle_autorizarpedidos_list($data) {
+        $arrSesion = $this->_arr_Sesion;
+        $result = $this->autorizarpedidos_m->get_detalle_autorizarpedidos_list($data);
+        header("Content-type: application/json");
+        echo Json_encode($result);
+    }
+
+    public function authorize_pedido() {
+        $data = array(
+            'id_pedido' => $this->input->post('txt_id'),
+        );
+        $result = $this->autorizarpedidos_m->authorize_pedido($data['id_pedido']);
+        echo $result;
+    }
+
+}

@@ -1,0 +1,84 @@
+<?php
+
+if (!defined('BASEPATH')) exit('No permitir el acceso directo al script');
+
+
+class Reporteconsumo extends CI_Controller {
+    var $_arr_Sesion;
+    public function __construct() {
+        
+         parent::__construct();
+         //
+         $this->_arr_Sesion = $this->session->userdata('ses_usuario');
+         $this->load->database();
+         $this->load->helper('url');
+         $this->load->helper('form');
+        $this->load->library('form_validation');
+        $this->load->model('reporteconsumo_m');
+    }
+    
+    public function index() {
+        // if ($this->seguridad->sec_class(__METHOD__)) return;
+        $arrSesion = $this->session->userdata('ses_usuario');
+        $arrSesion['controller'] = 'Reporte de Consumo';
+        $arrSesion['mGroup'] = 'm_reporte';
+        $arrSesion['mOption'] = 'm_reporte_03';
+        $this->load->view('includes/header');
+        $this->load->view('includes/menu',$arrSesion);
+        $this->load->view('includes/panel',$arrSesion);        
+        $arrRpt = array(
+            'fInicio'        => '',
+            'fFin'           => '',
+         );   
+        $this->session->set_userdata('arrayrpt', $arrRpt);
+        $this->load->view('reporteconsumo/reporteconsumo_list_v',$arrRpt);
+        $this->load->view('includes/footer');
+    }
+    
+    public function load_reporte($fechaIni,$fechaFin){
+        // if ($this->seguridad->sec_class(__METHOD__)) return;
+        $arrRpt = array(
+            'fInicio'    => $fechaIni,
+            'fFin'       => $fechaFin,
+         );   
+        $this->session->set_userdata('arrayrpt', $arrRpt);
+    }
+    
+    public function get_reporteconsumo_list(){
+        // if ($this->seguridad->sec_class(__METHOD__)) return;
+        $arrSesion = $this->session->userdata('ses_usuario');
+        $arrRpt = $this->session->userdata('arrayrpt');
+        $arrUsuario  = $arrSesion["id_usuario"];
+        $arrFechaIni = $arrRpt['fInicio'];
+        $arrFechaFin = $arrRpt['fFin'];
+        $result = $this->reporteconsumo_m->get_reporteconsumo_list($arrUsuario, $arrFechaIni, $arrFechaFin);
+        echo $arrReporte = json_encode($result, JSON_NUMERIC_CHECK);
+//         $this->session->unset_userdata('arrayrpt'); 
+    }
+    
+    public function detalle_producto($id_producto){
+        $head = $this->reporteconsumo_m->get_cabecera_consumo($id_producto);
+        $data = array('id_producto' => $id_producto, 'arrCabecera' => $head);
+        $this->load->view('reporteconsumo/reporteconsumo_detail_v', $data);
+    }
+    
+    public function pedido_ceco_detail($data){
+        $result = $this->reporteconsumo_m->pedido_ceco_detail($data);	
+        header("Content-type: application/json");
+	echo Json_encode($result);
+    }
+    
+        public function detail_pedido() {
+         $result = $this->reporteconsumo_m->cabecera_pedido_list($this->input->post('id'));
+        $data = array('id_pedido' => $this->input->post('id'),
+                      'arrCabecera' => $result
+                );
+        $this->load->view('reporteconsumo/pedido_detail_v', $data);
+    }
+    
+    public function detalle_pedido_list($data){
+        $result = $this->reporteconsumo_m->detalle_pedido_list($data);	
+        header("Content-type: application/json");
+	echo Json_encode($result);
+    }
+}

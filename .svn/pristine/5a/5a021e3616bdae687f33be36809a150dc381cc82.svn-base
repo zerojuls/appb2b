@@ -1,0 +1,66 @@
+<?php
+
+if (!defined('BASEPATH')) exit('No permitir el acceso directo al script');
+
+
+class Centrocosto extends CI_Controller {
+    var $_arr_Sesion;
+    public function __construct() {
+        
+         parent::__construct();
+         
+         $this->_arr_Sesion = $this->session->userdata('ses_usuario');
+         
+         $this->load->database();
+         $this->load->helper('url');
+         $this->load->helper('form');
+        $this->load->library('form_validation');
+        $this->load->model('centrocosto_m');
+    }
+    
+    public function index() {
+        $arrSesion = $this->session->userdata('ses_usuario');
+        $arrSesion['controller'] = 'Centro de Costo';
+        $arrSesion['mGroup'] = 'm_ceco';
+        $arrSesion['mOption'] = 'm_ceco_01';
+        $this->load->view('includes/header');
+        $this->load->view('includes/menu',$arrSesion);
+        $this->load->view('includes/panel',$arrSesion);        
+        $this->load->view('frontend/centrocosto/centrocosto_list_v');
+        $this->load->view('includes/footer');
+    }
+    
+    public function get_centrocosto_list(){
+//        $spName = 'CENTRO_COSTO_GET';
+//        $arrSesion = $this->_arr_Sesion;
+//        $arrParam = array(
+//            'id_usuario' => $arrSesion["id_usuario"],
+//            'alias_tipo_usuario' => $arrSesion["alias_tipo_usuario"]
+//        );
+//        $result = $this->base_m->get_listar_json($spName, $arrParam);
+//        echo $result;
+        $arrSesion = $this->_arr_Sesion;
+        $result = $this->centrocosto_m->get_centrocosto_list($arrSesion["id_usuario"],$arrSesion["alias_tipo_usuario"]);	
+        header("Content-type: application/json");
+	echo Json_encode($result);
+        
+    }
+    
+    public function new_centrocosto() {
+        // if ($this->seguridad->sec_class(__METHOD__)) return;
+        // $arrSesion['arrEmp'] = $this->centrocosto_m->get_();
+        $this->load->view('frontend/centrocosto/centrocosto_new_v');
+    }
+    
+    public function edit_centrocosto() {
+        // if ($this->seguridad->sec_class(__METHOD__)) return;
+        // $arrSesion['arrEmp'] = $this->centrocosto_m->get_();
+        $this->load->view('frontend/centrocosto/centrocosto_edit_v');
+    }
+    
+    public function assign_centrocosto() {
+        // if ($this->seguridad->sec_class(__METHOD__)) return;
+        // $arrSesion['arrEmp'] = $this->centrocosto_m->get_();
+        $this->load->view('frontend/centrocosto/centrocosto_assign_v');
+    }
+}

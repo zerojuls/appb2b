@@ -1,0 +1,33 @@
+DELIMITER $$
+
+DROP PROCEDURE IF EXISTS PRODUCTO_DETALLE_GET$$
+
+CREATE PROCEDURE `PRODUCTO_DETALLE_GET`(
+ IN P_id_sucursal INT,
+ IN P_id_producto INT
+ )
+BEGIN
+	DECLARE 	CLIENTE_ID 	INT(11);
+	SET 		CLIENTE_ID 	:= (SELECT C.id_cliente FROM sucursal S
+									INNER JOIN corporativo C ON S.id_corporativo = C.id_corporativo
+									WHERE S.id_sucursal = P_id_sucursal);
+	SELECT 		TP.id_tipo_precio AS id_tipo_precio, 
+				P.id_producto AS id_producto, 
+				E.id_envase AS id_envase,
+				U.id_unidad AS id_unidad,
+				P.codigo AS c_producto, 
+				P.nombre_corto AS d_producto, 
+				P.descripcion AS d_descripcion,
+				M.nombre AS d_marca, 
+				E.nombre AS d_envase,
+				U.nombre AS d_unidad,
+				CP.precio AS precio
+	FROM 		cliente_producto CP
+	INNER JOIN 	tipo_precio TP ON CP.id_tipo_precio=TP.id_tipo_precio
+	INNER JOIN 	producto P ON  CP.id_producto=P.id_producto
+	INNER JOIN 	envase E ON CP.id_envase=E.id_envase
+	INNER JOIN 	unidad U ON P.id_unidad = U.id_unidad
+	INNER JOIN 	marca M ON P.id_marca = M.id_marca
+	WHERE 		CP.id_cliente = CLIENTE_ID 
+				AND CP.id_producto = P_id_producto OR P_id_producto IS NULL;
+END$$

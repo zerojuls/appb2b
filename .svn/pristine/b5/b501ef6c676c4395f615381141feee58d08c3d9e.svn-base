@@ -1,0 +1,106 @@
+<?php
+
+if (!defined('BASEPATH')) exit('No permitir el acceso directo al script');
+
+class Reporteconsumo_m extends CI_Model {
+    
+    public function __construct() {
+        parent::__construct();
+    }
+    
+    public function get_reporteconsumo_list($arrUsuario, $arrFechaIni, $arrFechaFin){
+        $ar_result = array();
+        $sql = "SELECT  	CP.id_producto AS id_producto, PR.codigo AS codigo, PR.nombre AS producto, E.nombre AS envase, U.nombre AS unidad, SUM(CPD.cantidad) AS cantidad, CP.precio AS precio_venta, (SUM(CPD.cantidad) * CP.precio) AS total
+                FROM		comprobante_pago CPG
+                INNER JOIN	comprobante_pago_detalle CPD ON CPG.id_comprobante_pago = CPD.id_comprobante_pago
+                INNER JOIN 	cliente_producto CP ON CPD.id_producto = CP.id_producto
+                INNER JOIN 	producto PR ON CP.id_producto = PR.id_producto
+                INNER JOIN      sucursal S ON CPG.id_cliente = S.id_cliente
+                INNER JOIN      sucursal_usuario SU ON S.id_sucursal = SU.id_sucursal
+                INNER JOIN 	envase E ON CP.id_envase = E.id_envase
+                INNER JOIN 	unidad U ON CP.id_unidad = U.id_unidad
+                WHERE 		SU.id_usuario = ".$arrUsuario." ";
+        if($arrFechaIni != 'SF' && $arrFechaFin != 'SF'){ $sql .= "AND CPG.fecha_registro > '".$arrFechaIni."' AND CPG.fecha_registro < '".$arrFechaFin."' "; 
+        }else{  if($arrFechaIni == 'SF' && $arrFechaFin != 'SF'){ $sql .= "AND CPG.fecha_registro < '".$arrFechaFin."' ";
+            }else{ if($arrFechaIni != 'SF' && $arrFechaFin == 'SF'){ $sql .= "AND CPG.fecha_registro > '".$arrFechaIni."' "; } }
+        }
+        $sql .= " GROUP BY CP.id_producto";
+        $query = $this->db->query($sql);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+    
+    
+    public function get_detalle_comprobanteventa_list($arrComprobante){
+        $ar_result = array();
+        $sql = "SELECT PR.codigo ,PR.nombre ,CPD.cantidad, CPD.precio, CPD.cantidad * CPD.precio AS total FROM comprobante_pago_detalle CPD
+                INNER JOIN producto PR ON CPD.id_producto = PR.id_producto
+                WHERE CPD.id_comprobante_pago = ".$arrComprobante;
+        $query = $this->db->query($sql);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+    
+    public function get_cabecera_consumo($arrProducto){
+        $ar_result = array();
+        $sql = "SELECT PR.id_producto AS id_producto, PR.codigo AS codigo,PR.nombre AS producto, U.nombre AS unidad FROM producto PR
+                INNER JOIN unidad U ON PR.id_unidad = U.id_unidad
+                WHERE id_producto = ".$arrProducto;
+        $query = $this->db->query($sql);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+    
+    public function pedido_ceco_detail($arrProducto){
+        $ar_result = array();
+        $sql = "SELECT      P.id_pedido AS id_pedido, 
+                            LPAD(P.id_pedido,10,'0') AS codigo_pedido,
+                            P.fecha_registro AS fecha, C.nombre AS sucursal, PR.nombre AS producto, SUM(PD.cantidad) AS cantidad 
+                FROM        pedido P 
+                INNER JOIN pedido_detalle PD ON P.id_pedido = PD.id_pedido
+                INNER JOIN unidad_venta UV ON PD.id_tipo_precio = UV.id_tipo_precio AND PD.id_producto=UV.id_producto AND PD.id_envase=UV.id_envase AND PD.id_unidad=UV.id_unidad
+                INNER JOIN  cliente C ON P.id_cliente = C.id_cliente
+                INNER JOIN  producto PR ON PD.id_producto = PR.id_producto
+                WHERE       P.estado NOT IN ('T') AND PD.id_producto = ".$arrProducto."
+                    
+                 GROUP BY (P.id_pedido)";
+        $query = $this->db->query($sql);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+    
+    public function detalle_pedido_list($arrParam) {
+        $ar_result = array();
+        $consulta = "   SELECT 		LPAD(P.id_pedido,10,'0') AS codigo_pedido,
+                                        PD.id_pedido_detalle, PD.id_pedido, PR.codigo AS codigo_producto, PR.nombre, 
+					M.nombre AS marca, U.nombre AS unidad, PD.cantidad, PD.precio, (PD.cantidad*PD.precio) AS total
+                        FROM 		pedido_detalle PD
+                        INNER JOIN 	pedido P ON PD.id_pedido=P.id_pedido
+                        INNER JOIN	unidad_venta UV ON PD.id_tipo_precio = UV.id_tipo_precio AND PD.id_producto=UV.id_producto AND PD.id_envase=UV.id_envase AND PD.id_unidad=UV.id_unidad
+                        INNER JOIN 	producto PR ON PD.id_producto=PR.id_producto
+                        INNER JOIN 	unidad U ON PD.id_unidad=U.id_unidad
+                        INNER JOIN 	marca M ON PR.id_marca=M.id_marca
+                        WHERE P.id_pedido = ".$arrParam."";
+        $query = $this->db->query($consulta);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+    
+    public function cabecera_pedido_list($arrPedido) {
+        $ar_result = array();
+        $consulta = "   SELECT 		LPAD(P.id_pedido,10,'0') AS codigo_pedido, 
+                                        DATE_FORMAT(fecha_registro, '%d/%m/%Y %H:%i:%s %p') AS fecha_pedido, 
+					SUM(PD.cantidad*PD.precio) AS total_pedido, 
+                                        (CASE P.estado WHEN 'S' THEN 'Pendiente' WHEN 'D' THEN 'Despachado' WHEN 'L' THEN 'Parcial' WHEN 'E' THEN 'Entregado' WHEN 'P' THEN 'Procesado' WHEN 'N' THEN 'Anulado' WHEN 'T' THEN 'Temporal' END) AS estado_pedido
+                        FROM 		pedido_detalle PD
+                        INNER JOIN 	pedido P ON PD.id_pedido=P.id_pedido
+                        INNER JOIN	unidad_venta UV ON PD.id_tipo_precio = UV.id_tipo_precio AND PD.id_producto=UV.id_producto AND PD.id_envase=UV.id_envase AND PD.id_unidad=UV.id_unidad
+                        INNER JOIN 	producto PR ON PD.id_producto=PR.id_producto
+                        INNER JOIN 	unidad U ON PD.id_unidad=U.id_unidad
+                        INNER JOIN 	marca M ON PR.id_marca=M.id_marca
+                        WHERE P.id_pedido = ".$arrPedido."";
+        $query = $this->db->query($consulta);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+}

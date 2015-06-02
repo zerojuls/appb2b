@@ -1,0 +1,32 @@
+<?php
+
+if (!defined('BASEPATH')) exit('No permitir el acceso directo al script');
+
+class Centrocosto_m extends CI_Model {
+    
+    public function __construct() {
+        parent::__construct();
+    }
+    
+    public function get_centrocosto_list($arrParam1,$arrParam2) {
+             $ar_result = array();
+        $consulta = "   SELECT          S.id_sucursal AS id_sucursal, 
+					C.codigo_cliente AS codigo_cliente, 
+					C.nombre AS nombre, 
+					CONCAT(PE.nombre, ' ',PE.apellido) AS responsable,
+					U.email AS email,
+					C.direccion AS direccion,
+					(CASE CU.estado WHEN 'A' THEN 'Activo' END) AS estado
+			FROM 		sucursal_usuario SU
+			INNER JOIN 	sucursal S ON SU.id_sucursal = S.id_sucursal
+			INNER JOIN 	cliente C ON S.id_cliente = C.id_cliente
+			INNER JOIN      cliente_usuario CU ON C.id_cliente = CU.id_cliente
+			INNER JOIN      usuario U ON CU.id_usuario = U.id_usuario
+			INNER JOIN      persona_usuario PU ON U.id_usuario = PU.id_usuario
+			INNER JOIN      persona PE ON PU.id_persona = PE.id_persona
+			WHERE 		SU.id_usuario = ".$arrParam1."";
+        $query = $this->db->query($consulta);
+        if ($query->num_rows() > 0) { $ar_result = $query->result_array(); }
+        return $ar_result;
+    }
+}

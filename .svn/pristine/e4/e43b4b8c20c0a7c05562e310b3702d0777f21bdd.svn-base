@@ -1,0 +1,562 @@
+<style>
+    .box > .btn, .box > .btn.change_color_outside {display: none;}
+    .box.paint_hover:hover .change_color_outside{display: none;}
+    .box.title_big .title h4 {font-size: 65px;}
+    .height_big {height: 310px;}
+    .height_medium {height: 145px;}
+    .box.title_big .title h1, .box.title_big .title h2, .box.title_big .title h3, .box.title_big .title h4, .box.title_big .title h5 {position: static;}
+    .box h1, .box h2, .box h3, .box h4, .box h5 {line-height: 1.3em;}
+    h4 {font-size: 1.6rem;}
+    .box .content {background: none ;}
+    .icon-white, .nav > .active > a > [class^="icon-"], .nav > .active > a > [class*=" icon-"], .dropdown-menu > li > a:hover > [class^="icon-"], .dropdown-menu > li > a:hover > [class*=" icon-"], .dropdown-menu > .active > a > [class^="icon-"], .dropdown-menu > .active > a > [class*=" icon-"] {background-image: none;}
+    .tab-content {padding: 11px 6px;}
+    .btn.btn-transparent {background: none repeat scroll 0 0 transparent; color: #FFFFFF; text-align: left; border: thin solid transparent !important; font-size: 13px;}
+    .tooltip{top: 33%;}
+    @media (max-width: 600px){.tooltip{top: 87%;}}
+</style>
+<div id="main_container">
+    <div id="placepanel" class="row-fluid" >
+        <!-- start chart box -->
+        <div class="<?php if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') echo 'span9'; else echo 'span6'; ?> ">
+            <div class="box height_big paint color_14">
+                <div class="content full">
+                    <ul id="tabExample1" class="nav nav-tabs">
+                        <li class="<?php if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') echo 'hide'; else echo 'active'; ?> ">
+                            <a href="#home3" data-toggle="tab"><i class="icon-money "></i>Montos</a>
+                        </li>
+                        <li class="
+                        <?php   
+                            if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super'){
+                                if (isset($arrayTable[0]["activo"])) {
+                                    if (isset($arrayTable2[0]["activo"]))
+                                        echo $arrayTable[0]["activo"];
+                                    else
+                                        echo $arrayTable[0]["activo"];
+                                }
+                                else {
+                                    if (isset($arrayTable2[0]["activo"]))
+                                        echo 'hide ';
+                                    else
+                                        echo 'hide ';
+                                }
+                            }
+                            else{ 
+                                if (isset($arrayTable[0]["activo"])){
+                                        echo ' ';
+                                }else{
+                                    echo 'hide';
+                                }
+                            }
+                            
+                        ?> 
+                            "><a href="#home1" data-toggle="tab"><i class="icon-truck "></i>Pendientes</a></li>
+                        <li class="
+                        <?php
+                            if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super'){
+                                if (isset($arrayTable2[0]["activo"])) {
+                                    if (isset($arrayTable[0]["activo"]))
+                                        echo ' ';
+                                    else
+                                        echo $arrayTable2[0]["activo"];
+                                }
+                                else {
+                                    if (isset($arrayTable[0]["activo"]))
+                                        echo 'hide ';
+                                    else
+                                        echo 'hide ';
+                                }
+                            }
+                            else{ 
+                                if (isset($arrayTable2[0]["activo"])){
+                                        echo ' ';
+                                }else{
+                                    echo 'hide';
+                                }
+                            }    
+                        ?> 
+                            "><a href="#profile1" data-toggle="tab"><i class="icon-ok "></i>Por autorizar</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div class="tab-pane fade in 
+                            <?php   if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') 
+                                            echo 'hide'; 
+                                    else 
+                                            echo 'active'; 
+                            ?>" id="home3">
+                            <table id="datatable_example" class="responsive table table-hover full">
+                                <thead>
+                                    <tr>
+                                        <th class=" no_sort"> # </th>
+                                        <th class="no_sort "> Categoria </th>
+                                        <th class="ms ">Asignado </th>
+                                        <th class="ms " >Disponible </th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size: 1.3rem;">
+                                    <?php
+                                    $contador=0;
+                                    while($contador<=3)
+                                      {
+                                        echo '<tr >';
+                                        echo '<td class="">' . ($contador+1). '</td>';
+                                        if (isset($arrayTable3[$contador]["sucursal"])){
+                                            echo '<td class="">' . $arrayTable3[$contador]["categoria"] . '</td>';
+                                            echo '<td class="ms">S/. ' . $arrayTable3[$contador]["monto_asignado"] . '</td>';
+                                            echo '<td class="ms">S/. ' . $arrayTable3[$contador]["monto_disponible"] . '</td>';}
+                                        else echo '<td> </td><td> </td><td> </td>';
+                                        echo '</tr>';
+                                         $contador++;
+                                      }
+                                    ?>
+                                </tbody>
+                            </table>
+                            <!--<div class="description"><a class="btn btn-block btn-transparent"> Para detalles presione aquí <i class="icon-info-sign"></i> </a></div>-->
+                        </div>
+                        <div class="tab-pane fade in 
+                        <?php
+                        if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') {
+                            if (isset($arrayTable[0]["activo"])) {
+                                if (isset($arrayTable2[0]["activo"]))
+                                    echo $arrayTable[0]["activo"];
+                                else
+                                    echo $arrayTable[0]["activo"];
+                            }
+                            else {
+                                if (isset($arrayTable2[0]["activo"]))
+                                    echo 'hide';
+                                else
+                                    echo 'hide';
+                            }
+                        }
+                        else{ 
+                            echo 'tabla_montos_activa';
+                        }
+                        ?> 
+                             " id="home1">
+                            <table id="datatable_example" class="responsive table table-hover full">
+                                <thead>
+                                    <tr>
+                                        <th class=" no_sort"> # </th>
+                                        <th class=" no_sort"> Categoria </th>
+                                        <?php if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') {echo '<th class="no_sort "> Cliente </th>';} ?>
+                                        <th class="ms no_sort "> Monto </th>
+                                        <th class="Yy no_sort" style="width: 50px !important;"> Fecha </th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size: 1.3rem;">
+                                    <?php
+                                    $contador1=0;
+                                    while($contador1<=3)
+                                      {
+                                        echo '<tr >';
+                                        echo '<td class="">' . ($contador1+1). '</td>';
+                                        if (isset($arrayTable[$contador1]["categoria"])){
+                                            echo '<td class="">' . $arrayTable[$contador1]["categoria"] . '</td>';
+                                            if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super')  {echo '<td class="">' . $arrayTable[$contador1]["cliente"] . '</td>';};
+                                            echo '<td class="ms">S/. ' . $arrayTable[$contador1]["monto"] . '</td>';
+                                            echo '<td class="Yy no_sort" style="width: 50px !important;">' . $arrayTable[$contador1]["fecha"] . '</td>';}
+                                        else echo '<td> </td><td> </td><td> </td>';
+                                        echo '</tr>';
+                                         $contador1++;
+                                      }
+                                    ?>
+                                </tbody>
+                            </table>
+                            <div class="description"><?php echo anchor('historialpedido', 'Para detalles presione aquí <i class="icon-info-sign"></i>', array('class' => 'btn btn-block btn-transparent')); ?></div>
+                        </div>
+                        <div class="tab-pane fade in 
+                                    <?php
+                                        if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') {
+                                            if (isset($arrayTable2[0]["activo"])) {
+                                                if (isset($arrayTable[0]["activo"]))
+                                                    echo ' tabla1_activa';
+                                                else
+                                                    echo $arrayTable2[0]["activo"];
+                                            }
+                                            else {
+                                                if (isset($arrayTable[0]["activo"]))
+                                                    echo 'hide solo_tabla1_activa';
+                                                else
+                                                    echo 'hide no_tablas_activas';
+                                            }
+                                        }
+                                        else{ 
+                                            echo 'tabla_montos_activa';
+                                        }
+                                    ?> 
+                             " id="profile1">
+                            <table id="datatable_example" class="responsive table table-hover full">
+                                <thead>
+                                    <tr>
+                                        <th class=" no_sort"> # </th>
+                                        <th class=" no_sort"> Categoria </th>
+                                        <?php if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') {echo '<th class="no_sort "> Cliente </th>';} ?>
+                                        <th class="ms no_sort "> Monto </th>
+                                        <th class="Yy no_sort " style="width: 50px !important;"> Fecha </th>
+                                    </tr>
+                                </thead>
+                                <tbody style="font-size: 1.3rem;">
+                                    <?php
+                                    $contador2=0;
+                                    while($contador2<=3)
+                                      {
+                                        echo '<tr >';
+                                        echo '<td class="">' . ($contador2+1). '</td>';
+                                        if (isset($arrayTable2[$contador2]["categoria"])){
+                                            echo '<td class="">' . $arrayTable2[$contador2]["categoria"] . '</td>';
+                                            if (($alias_tipo_usuario) === 'admin' || ($alias_tipo_usuario) === 'super')  {echo '<td class="">' . $arrayTable[$contador2]["cliente"] . '</td>';}
+                                            echo '<td class="ms">S/. ' . $arrayTable2[$contador2]["monto"] . '</td>';
+                                            echo '<td class="Yy no_sort" style="width: 50px !important;">' . $arrayTable2[$contador2]["fecha"] . '</td>';}
+                                        else {echo '<td> </td><td> </td><td> </td>';}
+                                         echo '</tr>';
+                                         $contador2++;
+                                      }
+                                    ?>
+                                </tbody>
+                            </table>
+                            <div class="description"><?php echo anchor('autorizarpedidos', 'Para detalles presione aquí <i class="icon-info-sign"></i>', array('class' => 'btn btn-block btn-transparent')); ?></div>
+                        </div>
+                    </div>
+                </div>
+                <!-- End .content -->
+            </div>
+        </div>
+        <div class="<?php if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') echo 'span3'; else echo 'span6'; ?> ">
+            <div class="row-fluid fluid">
+                <div class="<?php if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') echo 'span12'; else echo 'span6'; ?>">
+                    <div id="pedido_categoria"  class=" box color_2 height_medium paint_hover" onclick="window.location='<?php echo base_url("historialpedido");?>';" style="cursor:pointer;cursor:hand;">
+                        <div class="content numbers">
+                            <h4 style="font-size: 21px;"><b>Pedidos por Categoria</b></h4>
+                            <h3 style="font-size: 15px;"><?php switch(date("m")){
+                                                                            case "01": echo "Enero"; break;
+                                                                            case "02": echo "Febrero"; break; 
+                                                                            case "03": echo "Marzo"; break;
+                                                                            case "04": echo "Abril"; break;
+                                                                            case "05": echo "Mayo"; break;
+                                                                            case "06": echo "Junio"; break;
+                                                                            case "07": echo "Julio"; break;
+                                                                            case "08": echo "Agosto"; break;
+                                                                            case "09": echo "Septiembre"; break;
+                                                                            case "10": echo "Octubre"; break;
+                                                                            case "11": echo "Noviembre"; break;
+                            case "12": echo "Diciembre"; break;}; echo " ".date("Y");?>
+                            </h3>
+                            <div align="right" >
+                                <?php 
+                                    echo '<tr >';
+                                    foreach($PedidoCategoria as $valor){
+                                        echo '<td class=""><i class="icon-'; 
+                                         switch($valor["categoria"]) {
+                                             case "Oficina":    echo "pencil";  break;
+                                             case "Papeleria":  echo "file";    break;
+                                             case "Computo":    echo "hdd";     break;
+                                             case "Computo":    echo "hdd";     break;
+                                             case "Limpieza":   echo "trash";   break;
+                                             case "Equipos":    echo "wrench";  break;
+                                             case "Kit":        echo "gift";    break;
+                                             case "Alimentos":  echo "leaf";    break;
+                                         } 
+                                         echo ' "></i> ' . $valor["categoria"] . ':</td>';
+                                        echo '<td class="value" align="right" style="font-size: 18px;"> ' . $valor["pedidos_categoria"] . '</td>';
+                                        echo '<br>';
+                                    }
+                                    echo '</tr>';
+                                    unset($valor);
+                                ?>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="<?php if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') echo 'hide'; else echo 'span6'; ?>">
+                    <div class="box color_25 height_medium paint_hover">
+                        <div class="content numbers">
+                            <h4 style="font-size: 21px;"><b>Saldo Disponible</b></h4>
+                            <br>
+                            <div align="right" >
+                                <?php 
+                                    echo '<tr >';
+                                    foreach($SaldosDisponibles as $valor){
+                                         echo '<td class=""><i class="icon-'; 
+                                         switch($valor["categoria"]) {
+                                             case "Oficina":    echo "pencil";  break;
+                                             case "Papeleria":  echo "file";    break;
+                                             case "Computo":    echo "hdd";     break;
+                                             case "Computo":    echo "hdd";     break;
+                                             case "Limpieza":   echo "trash";   break;
+                                             case "Equipos":    echo "wrench";  break;
+                                             case "Kit":        echo "gift";    break;
+                                             case "Alimentos":  echo "leaf";    break;
+                                         } 
+                                         echo ' "></i> ' . $valor["categoria"] . ':</td>';
+                                         echo '<td class="value" align="right" style="font-size: 18px;"> S/. ' . $valor["saldo_disponible"] . '</td>';
+                                         echo '<br>';
+                                    }
+                                    echo '</tr>';
+                                    unset($valor);
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row-fluid fluid">
+                <div class="<?php if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') echo 'span12'; else echo 'span6'; ?> ">
+                    <div class=" box  height_medium title_big paint_hover">
+                        <div class="title">
+                            <div class="row-fluid">
+                                <div class="span12">
+                                    <h5> <span>Ranking Productos</span> </h5>
+                                    <br>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="content" style="padding-top:28px;">
+                            <div id="placeholder2" style="width:100%;height:85px;"></div>
+                            <div class="row-fluid description">
+                                <div class="pull-left">ULTIMOS 30 DIAS</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="<?php if (($alias_tipo_usuario) == 'admin' || ($alias_tipo_usuario) == 'super') echo 'hide'; else echo 'span6'; ?> ">
+                    <div class="box color_25 height_medium paint_hover">
+                        <div class="content numbers">
+                            <h4 style="font-size: 21px;"><b>Fecha Cierre de Compra</b></h4>
+                            <div align="right" >
+                                <?php 
+                                    echo '<tr >';
+                                    foreach($FechaCierre as $valor){
+                                         echo '<td class=""><i class="icon-'; 
+                                         switch($valor["categoria"]) {
+                                             case "Oficina":    echo "pencil";  break;
+                                             case "Papeleria":  echo "file";    break;
+                                             case "Computo":    echo "hdd";     break;
+                                             case "Limpieza":   echo "trash";   break;
+                                             case "Equipos":    echo "wrench";  break;
+                                             case "Kit":        echo "gift";    break;
+                                             case "Alimentos":  echo "leaf";    break;
+                                         } 
+                                         echo ' "></i> ' . $valor["categoria"] . ':</td>';
+                                         echo '<td class="value" align="right" style="font-size: 18px;"> ' . $valor["fecha_cierre"] . '</td>';
+                                         echo '<br>';
+                                    }
+                                    echo '</tr>';
+                                    unset($valor);
+                                ?>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row-fluid">
+        <div class="box color_3 title_big height_big paint">
+            <div class="title">
+                <div class="row-fluid">
+                    <div class="span12">
+                        <h4></i><span>Historial de Compras</span> </h4>
+                    </div>
+                </div>
+            </div>
+            <div class="content"  style="padding-top:35px;">
+                <div id="placeholder" style="width:100%;height:240px;"> </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script language="javascript" type="text/javascript" src="js/plugins/flot/jquery.flot.js"></script> 
+<script language="javascript" type="text/javascript" src="js/plugins/flot/jquery.flot.resize.js"></script> 
+<script type="text/javascript">
+    $(function() {
+        // $('#pedido_categoria').css( 'cursor', 'pointer' );
+        var datamain = (<?php echo $arrayGraphics ?>);
+        var data_campaigns = [
+            [1, datamain[0].valor],
+            [2, datamain[1].valor],
+            [3, datamain[2].valor],
+            [4, datamain[3].valor],
+            [5, datamain[4].valor],
+            [6, datamain[5].valor],
+            [7, datamain[6].valor],
+            [8, datamain[7].valor],
+            [9, datamain[8].valor],
+            [10, datamain[9].valor],
+            [11, datamain[10].valor],
+            [12, datamain[11].valor],
+            [13, datamain[12].valor],
+            [14, datamain[13].valor],
+            [15, datamain[14].valor],
+            [16, datamain[15].valor],
+            [17, datamain[16].valor],
+            [18, datamain[17].valor]
+        ];
+        var data_campaigns2 = [
+            [1.25, datamain[0].valor2],
+            [2.25, datamain[1].valor2],
+            [3.25, datamain[2].valor2],
+            [4.25, datamain[3].valor2],
+            [5.25, datamain[4].valor2],
+            [6.25, datamain[5].valor2],
+            [7.25, datamain[6].valor2],
+            [8.25, datamain[7].valor2],
+            [9.25, datamain[8].valor2],
+            [10.25, datamain[9].valor2],
+            [11.25, datamain[10].valor2],
+            [12.25, datamain[11].valor2],
+            [13.25, datamain[12].valor2],
+            [14.25, datamain[13].valor2],
+            [15.25, datamain[14].valor2],
+            [16.25, datamain[15].valor2],
+            [17.25, datamain[16].valor2],
+            [18.25, datamain[17].valor2]
+        ]
+
+        var plot = $.plot($("#placeholder"),
+                [{data: data_campaigns, color: "rgba(0,0,0,0.2)", shadowSize: 0,
+                        bars: {
+                            show: true,
+                            lineWidth: 0,
+                            fill: true,
+                            fillColor: {colors: [{opacity: 1}, {opacity: 1}]}
+                        }
+                    },
+                    {data: data_campaigns2,
+                        color: "rgba(255,255,255, 0.4)",
+                        shadowSize: 0,
+                        lines: {show: true, fill: false}, points: {show: false},
+                        bars: {show: false}
+                    }
+                ],
+                {
+                    series: {
+                        bars: {show: true, barWidth: 0.6}
+                    },
+                    grid: {show: false, hoverable: true, clickable: true, autoHighlight: true, borderWidth: 0},
+                    yaxis: {min: 0, max: 20}
+
+                });
+
+        function showTooltip(x, y, contents) {
+            var datamain = (<?php echo $arrayGraphics ?>);
+            var myInteger = parseInt(contents);
+            $('<div id="tooltip"><div class="date"><b>Mes: </b><\/div><div class="title text_color_3">' + datamain[myInteger-1].fecha + '<\/div> <div class="description text_color_3">Total:<\/div><div class="title ">S/. ' + datamain[myInteger-1].total + ' <\/div><div class="description">'+ datamain[myInteger-1].cantidad +' Pedidos<\/div><\/div>').css({
+                position: 'absolute',
+                display: 'none',
+                top: y - 125,
+                left: x - 40,
+                border: '0px solid #ccc',
+                padding: '2px 6px',
+                'background-color': '#fff',
+                opacity: 10
+            }).appendTo("body").fadeIn(200);
+        }
+
+        var previousPoint = null;
+        $("#placeholder").bind("plothover", function(event, pos, item) {
+            $("#x").text(pos.x.toFixed(2));
+            $("#y").text(pos.y.toFixed(2));
+            if (item) {
+                if (previousPoint !== item.dataIndex) {
+                    previousPoint = item.dataIndex;
+                    $("#tooltip").remove();
+                    var x = item.datapoint[0].toFixed(2),
+                            y = item.datapoint[1].toFixed(2);
+                    showTooltip(item.pageX, item.pageY,
+                            x);
+                }
+            }
+        });
+        $("#placeholder").bind("plotclick", function (event, pos, item) {
+            if (item) {
+                $("#tooltip").show();
+            }
+        });
+
+        //Fundraisers chart
+        var datamain2 = (<?php echo $arrayGraphics2 ?>);
+        var data_fund = 
+        [
+            [1, datamain2[0].valor],
+            [2, datamain2[1].valor],
+            [3, datamain2[2].valor],
+            [4, datamain2[3].valor],
+            [5, datamain2[4].valor],
+            [6, datamain2[5].valor],
+            [7, datamain2[6].valor],
+            [8, datamain2[7].valor],
+            [9, datamain2[8].valor],
+            [10, datamain2[9].valor]
+                    // [11, datamain2[10].cantidad]
+        ];
+        $.plot($("#placeholder2"),
+                [{data: data_fund, color: "#fff", shadowSize: 0,
+                        bars: {
+                            show: true,
+                            lineWidth: 0,
+                            fill: true,
+                            highlight: {
+                                opacity: 0.3
+                            },
+                            fillColor: {colors: [{opacity: 1}, {opacity: 1}]}
+                        }
+                    }
+                ],
+                {
+                    series: {
+                        bars: {show: true, barWidth: 0.6}
+                    },
+                    grid: {show: false, hoverable: true, clickable: true, autoHighlight: true, borderWidth: 0},
+                    yaxis: {min: 0, max: 23}
+
+                });
+
+        function showTooltip2(x, y, contents) {
+            var datamain2 = (<?php echo $arrayGraphics2 ?>);
+            var myInteger = parseInt(contents);
+            $('<div id="tooltip" class="tooltip " style=" "><div class="title " style="font-size: 16px; ">' + datamain2[myInteger-1].nombre + '</div><div class="description"> Cantidades: ' + datamain2[myInteger-1].cantidad + ' </div></div>').css({
+                position: 'absolute',
+                display: 'none',
+                overflow: 'visible',
+
+                left: x - 35,
+                border: '0px solid #ccc',
+                padding: '2px 6px',
+                'background-color': '#fff',
+                opacity: 10
+            }).appendTo("body").fadeIn(200);
+        }
+
+        var previousPoint = null;
+        $("#placeholder2").bind("plothover", function(event, pos, item) {
+            $("#x").text(pos.x.toFixed(2));
+            $("#y").text(pos.y.toFixed(2));
+            if (item) {
+                if (previousPoint !== item.dataIndex) {
+                    previousPoint = item.dataIndex;
+                    $("#tooltip").remove();
+                    var x = item.datapoint[0].toFixed(2),
+                            y = item.datapoint[1].toFixed(2);
+                    showTooltip2(item.pageX, item.pageY,
+                            x);
+                }
+            }
+        });
+        $("#placeholder2").bind("plotclick", function (event, pos, item) {
+            if (item) {
+                $("#tooltip").show();
+            }
+        });
+    });
+
+    $("#placeholder").mouseout(function(event, ui) {
+        $("#tooltip").hide();
+    });
+
+    $("#placepanel").mouseout(function(event, ui) {
+        $("#tooltip").hide();
+    });
+    // 
+    
+</script>
